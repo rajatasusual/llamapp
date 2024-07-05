@@ -1,0 +1,203 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+}
+
+.logo {
+    width: 40px;
+}
+
+.chat-container {
+    width: 80%;
+    border-radius: 20px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.3); /* Increased opacity */
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    position: relative; /* Ensure relative positioning for child elements */
+}
+
+.chat-header {
+    background: rgba(0, 123, 255, 0.4); /* Increased opacity */
+    color: white;
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    z-index: 1; /* Ensure the header is above other elements */
+}
+
+.chat-box {
+    height: 300px;
+    padding: 10px;
+    overflow-y: auto;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.chat-input {
+    display: flex;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 0;
+    outline: none;
+    background: rgba(255, 255, 255, 0.5); /* Increased opacity */
+    color: #333; /* Changed text color for better contrast */
+    font-family: 'Roboto', sans-serif;
+    font-size: medium;
+}
+
+.chat-input button {
+    padding: 15px;
+    border: none;
+    background-color: rgba(0, 123, 255, 0.6); /* Increased opacity */
+    color: white;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    font-family: 'Roboto', sans-serif;
+}
+
+.chat-input button:hover {
+    background-color: rgba(0, 123, 255, 0.8); /* Increased opacity */
+}
+
+.message {
+    margin: 10px 0;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.message.user {
+    justify-content: flex-end;
+}
+
+.message-content {
+    padding: 10px 20px;
+    border-radius: 20px;
+    max-width: 80%;
+    word-wrap: break-word;
+    backdrop-filter: blur(10px);
+    font-family: 'Roboto', sans-serif;
+    position: relative;
+}
+
+.message.user .message-content {
+    background: rgba(0, 123, 255, 0.4); /* Increased opacity */
+    color: white;
+    align-self: flex-end;
+}
+
+.message.bot .message-content {
+    background: rgba(255, 255, 255, 0.5); /* Increased opacity */
+    color: #333; /* Changed text color for better contrast */
+    align-self: flex-start;
+}
+
+#typing-indicator .message-content {
+    font-style: italic;
+    color: #333; /* Changed text color for better contrast */
+    background: rgba(255, 255, 255, 0.5); /* Increased opacity */
+}
+
+.citation {
+    color: #007bff;
+    cursor: pointer;
+    text-decoration: underline;
+    position: relative; /* Ensure relative positioning for tooltip */
+}
+
+.citation-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 5px); /* Position tooltip below citation */
+    left: 0;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    max-width: 300px;
+    z-index: 100; /* Ensure tooltip is above other elements */
+    font-size: 12px;
+    color: #333;
+}
+
+.citation:hover .citation-tooltip {
+    display: block;
+}
+
+.citation-tooltip h4 {
+    margin: 0 0 5px;
+    font-size: 14px;
+}
+
+.citation-tooltip p {
+    margin: 0;
+}
+
+.citation-tooltip .read-more {
+    color: #007bff;
+    cursor: pointer;
+    text-decoration: underline;
+    display: block;
+    margin-top: 5px;
+}
+
+.popup {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 500px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    z-index: 200; /* Ensure popup is above other elements */
+}
+
+.popup h4 {
+    margin: 0 0 10px;
+    font-size: 16px;
+}
+
+.popup p {
+    margin: 0 0 10px;
+}
+
+.popup .close-btn {
+    display: block;
+    margin-top: 10px;
+    color: #007bff;
+    cursor: pointer;
+    text-decoration: underline;
+    text-align: right;
+}
+
+.reply-button {
+    margin-top: 10px;
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.reply-button:hover {
+    background-color: #0056b3;
+}
