@@ -9,14 +9,14 @@ import { PostmanLoader } from "./loaders/PostmanLoader";
 
 const CHUNK_SIZE = 1000;
 
-const loadJSONDoc = async (file) => {
+const loadJSONDoc = async (file: string | Blob) => {
     const jsonLoader = new JSONLoader(file);
     const expertDocs = await jsonLoader.load();
 
     return expertDocs;
 }
 
-const loadHTMLDoc = async (file) => {
+const loadHTMLDoc = async (file: string | Blob) => {
     const htmlLoader = new HTMLLoader(file);
     const htmlDoc = await htmlLoader.load();
 
@@ -30,14 +30,14 @@ const loadHTMLDoc = async (file) => {
     return transformedDoc;
 }
 
-const loadPostmanCollection = async (file) => {
+const loadPostmanCollection = async (file: string | Blob) => {
     const postmanLoader = new PostmanLoader(file);
     const jsonDoc = await postmanLoader.load();
 
     return jsonDoc;
 }
 
-const loadDirectoryDocs = async (directory) => {
+const loadDirectoryDocs = async (directory: string) => {
     const directoryLoader = new DirectoryLoader(directory, {
         ".html": (path) => new TextLoader(path),
         ".json": (path) => new JSONLoader(path),

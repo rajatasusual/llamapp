@@ -23,7 +23,7 @@ export class HTMLLoader extends TextLoader {
         return textNodes;
     }
 
-    private extractTextFromHtml(html) {
+    private extractTextFromHtml(html: string) {
         let textBuffer: any[] = [];
         let currentText = '';
         let linkBuffer: any = {};

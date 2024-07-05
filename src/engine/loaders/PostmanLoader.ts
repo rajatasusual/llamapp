@@ -49,7 +49,7 @@ export class PostmanLoader extends TextLoader {
         const items: any[] = [];
 
         // Recursive function to traverse the collection
-        const traverseItems = (itemsArray) => {
+        const traverseItems = (itemsArray: any[]) => {
             itemsArray.forEach((item) => {
                 if (item.request) {
                     items.push({pageContent: JSON.stringify(item), metadata: {name: item.name, url: item.request.url.raw}}); // Push entire item as a JSON string
