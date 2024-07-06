@@ -12,6 +12,8 @@ import { rewrite } from "./engine/chains/rewriter";
 import { RelevantDocumentsRetriever } from "./engine/chains/retriever";
 
 import 'dotenv/config';
+import { fusion } from "./engine/chains/fusion";
+import { MemoryVectorStore } from "langchain/vectorstores/memory";
 
 const { chatLLM, documentStore, apiStore, embeddings } = configureEnvironment();
 
@@ -51,37 +53,44 @@ const promptQuestion = async () => {
 const respond = async (question: string) => {
     question = process.env.REWRITE === "true" ? await rewrite(question, chatLLM) : question;
 
-        const questionAnsweringPrompt = PromptTemplate.fromTemplate(
-            `Answer the user's question from the following context. This is your only source of truth.: 
+    const questionAnsweringPrompt = PromptTemplate.fromTemplate(
+        `Answer the below question from the following context. This is your only source of truth.: 
     {context}
     Question: {input}`
-        );
+    );
 
-        const combineDocsChain = await createStuffDocumentsChain({
-            llm: chatLLM,
-            prompt: questionAnsweringPrompt
-        });
+    const combineDocsChain = await createStuffDocumentsChain({
+        llm: chatLLM,
+        prompt: questionAnsweringPrompt
+    });
 
-        const retriever = new RelevantDocumentsRetriever({
-            vectorStores: Array.from([documentStore, apiStore]),
-            embeddings
-        });
+    let retriever: any = new RelevantDocumentsRetriever({
+        vectorStores: Array.from([documentStore, apiStore]),
+        embeddings
+    });
 
-        const chain = await createRetrievalChain({
-            retriever,
-            combineDocsChain
-        });
+    if (process.env.FUSION === "true") {
+        const scoredDocuments = await fusion({ query: question, chatLLM, retriever });
 
-        const chainRes = await chain.invoke({ input: question });
+        retriever = (await MemoryVectorStore.fromDocuments(scoredDocuments, embeddings)).asRetriever();
+        
+    } 
+    
+    const retrievalChain = await createRetrievalChain({
+        retriever,
+        combineDocsChain
+    });
 
-        //log the result
-        fs.writeFileSync("output.json", JSON.stringify({
-            data: new Date().toISOString(),
-            chainRes
-        }), { encoding: 'utf8', flag: 'a' });
+    const chainRes = await retrievalChain.invoke({ input: question });
 
+    //log the result
+    fs.writeFileSync("output.jsonl", JSON.stringify({
+        data: new Date().toISOString(),
+        chainRes
+    }), { encoding: 'utf8', flag: 'a' });
 
-        return chainRes;
+    return chainRes;
+
 }
 
 const loadDocuments = async (vectorStore: RedisVectorStore, path: string) => {

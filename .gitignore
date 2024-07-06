@@ -1,3 +1,4 @@
 node_modules
 docs
-**/output.json
+**/output.jsonl
+.DS_Store

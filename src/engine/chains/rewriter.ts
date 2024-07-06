@@ -35,9 +35,9 @@ Here is the user's question (please rephrase and send ONLY JSON): {question}`
         const response = await chain.invoke({
             example,
             schema,
-            question,
-            format_instructions: parser.getFormatInstructions()
+            question
         });
+        
         console.log("Rephrased Question: " + response.question);
 
         return response.question;
