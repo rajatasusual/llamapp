@@ -6,6 +6,8 @@ body {
     height: 100vh;
     margin: 0;
     background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 footer {
@@ -21,10 +23,8 @@ footer {
 hr {
     border: none;
     height: 0.5px;
-    /* Set the hr color */
-    color: #333;  /* old IE */
     background-color: #333;  /* Modern Browsers */
-  }
+}
 
 .logo {
     width: 40px;
@@ -32,23 +32,24 @@ hr {
 
 .chat-container {
     width: 80%;
+    max-width: 600px;
     border-radius: 20px;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.3); /* Increased opacity */
+    background: rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(10px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
     border: 1px solid rgba(255, 255, 255, 0.18);
-    position: relative; /* Ensure relative positioning for child elements */
+    position: relative;
 }
 
 .chat-header {
-    background: rgba(0, 123, 255, 0.4); /* Increased opacity */
+    background: rgba(0, 123, 255, 0.4);
     color: white;
     padding: 15px;
     text-align: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(10px);
-    z-index: 1; /* Ensure the header is above other elements */
+    z-index: 1;
 }
 
 .chat-box {
@@ -71,24 +72,30 @@ hr {
     border: none;
     border-radius: 0;
     outline: none;
-    background: rgba(255, 255, 255, 0.5); /* Increased opacity */
-    color: #333; /* Changed text color for better contrast */
+    background: rgba(255, 255, 255, 0.5);
+    color: #333;
     font-family: 'Roboto', sans-serif;
     font-size: medium;
+    transition: background 0.3s ease;
+}
+
+.chat-input input:focus {
+    background: rgba(255, 255, 255, 0.7);
 }
 
 .chat-input button {
     padding: 15px;
     border: none;
-    background-color: rgba(0, 123, 255, 0.6); /* Increased opacity */
+    background-color: rgba(0, 123, 255, 0.6);
     color: white;
     cursor: pointer;
     backdrop-filter: blur(10px);
     font-family: 'Roboto', sans-serif;
+    transition: background-color 0.3s ease;
 }
 
 .chat-input button:hover {
-    background-color: rgba(0, 123, 255, 0.8); /* Increased opacity */
+    background-color: rgba(0, 123, 255, 0.8);
 }
 
 .message {
@@ -112,43 +119,49 @@ hr {
 }
 
 .message.user .message-content {
-    background: rgba(0, 123, 255, 0.4); /* Increased opacity */
+    background: rgba(0, 123, 255, 0.4);
     color: white;
     align-self: flex-end;
 }
 
 .message.bot .message-content {
-    background: rgba(255, 255, 255, 0.5); /* Increased opacity */
-    color: #333; /* Changed text color for better contrast */
+    background: rgba(255, 255, 255, 0.5);
+    color: #333;
     align-self: flex-start;
 }
 
 #typing-indicator .message-content {
     font-style: italic;
-    color: #333; /* Changed text color for better contrast */
-    background: rgba(255, 255, 255, 0.5); /* Increased opacity */
+    color: #333;
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .citation {
     color: #007bff;
     cursor: pointer;
     text-decoration: underline;
-    position: relative; /* Ensure relative positioning for tooltip */
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.citation:hover {
+    color: #0056b3;
 }
 
 .citation-tooltip {
     display: none;
     position: absolute;
-    bottom: calc(100% + 5px); /* Position tooltip below citation */
+    bottom: calc(100% + 5px);
     left: 0;
     background: rgba(255, 255, 255, 0.9);
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     padding: 10px;
     max-width: 300px;
-    z-index: 100; /* Ensure tooltip is above other elements */
+    z-index: 100;
     font-size: 12px;
     color: #333;
+    transition: opacity 0.3s ease;
 }
 
 .citation:hover .citation-tooltip {
@@ -170,10 +183,15 @@ hr {
     text-decoration: underline;
     display: block;
     margin-top: 5px;
+    transition: color 0.3s ease;
+}
+
+.citation-tooltip .read-more:hover {
+    color: #0056b3;
 }
 
 .popup {
-    display: none; /* Hidden by default */
+    display: none;
     position: fixed;
     top: 50%;
     left: 50%;
@@ -184,7 +202,7 @@ hr {
     background: rgba(255, 255, 255, 0.9);
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    z-index: 200; /* Ensure popup is above other elements */
+    z-index: 200;
 }
 
 .popup h4 {
@@ -203,6 +221,11 @@ hr {
     cursor: pointer;
     text-decoration: underline;
     text-align: right;
+    transition: color 0.3s ease;
+}
+
+.popup .close-btn:hover {
+    color: #0056b3;
 }
 
 .reply-button {
@@ -214,6 +237,7 @@ hr {
     border-radius: 10px;
     cursor: pointer;
     font-size: 12px;
+    transition: background-color 0.3s ease;
 }
 
 .reply-button:hover {
