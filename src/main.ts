@@ -65,23 +65,25 @@ const log = async (chainRes: {
         answer: chainRes.answer,
         additionalInfo: chainRes
     }));
-    
+
     console.log("messageId: " + messageId);
 }
 
-const respond = async (question: string, replyingToMessageId?: number) => {
+const respond = async (question: string, replyingToMessageId?: number, config?: any) => {
+
+    updateConfig(config);
 
     if (replyingToMessageId) {
         const messages = await client.lRange('messages', 0, -1);
         const message = messages.find((msg: string) => JSON.parse(msg).messageId === replyingToMessageId);
-        
+
         if (message) {
             const parsedMessage = JSON.parse(message);
             question = await enrichMessage(parsedMessage, question);
         }
     }
-    
-    question = process.env.REWRITE === "true"  && !replyingToMessageId ? await rewrite(question, chatLLM) : question;
+
+    question = process.env.REWRITE === "true" && !replyingToMessageId ? await rewrite(question, chatLLM) : question;
 
     const questionAnsweringPrompt = PromptTemplate.fromTemplate(
         `Answer the below question from the following context. This is your only source of truth.: 
@@ -164,6 +166,14 @@ const loadDocuments = async (vectorStore: RedisVectorStore, path: string) => {
         console.log("Total Documents: " + docs.length);
 
         await addDocuments(docs, vectorStore);
+    }
+}
+
+const updateConfig = (config: any) => {
+    if (config) {
+        Object.keys(config).forEach(key => {
+            process.env[key] = config[key];
+        });
     }
 }
 

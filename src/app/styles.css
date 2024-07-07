@@ -6,8 +6,6 @@ body {
     height: 100vh;
     margin: 0;
     background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
 }
 
 footer {
@@ -23,7 +21,8 @@ footer {
 hr {
     border: none;
     height: 0.5px;
-    background-color: #333;  /* Modern Browsers */
+    color: #333;
+    background-color: #333;
 }
 
 .logo {
@@ -32,7 +31,6 @@ hr {
 
 .chat-container {
     width: 80%;
-    max-width: 600px;
     border-radius: 20px;
     overflow: hidden;
     background: rgba(255, 255, 255, 0.3);
@@ -76,11 +74,6 @@ hr {
     color: #333;
     font-family: 'Roboto', sans-serif;
     font-size: medium;
-    transition: background 0.3s ease;
-}
-
-.chat-input input:focus {
-    background: rgba(255, 255, 255, 0.7);
 }
 
 .chat-input button {
@@ -91,7 +84,6 @@ hr {
     cursor: pointer;
     backdrop-filter: blur(10px);
     font-family: 'Roboto', sans-serif;
-    transition: background-color 0.3s ease;
 }
 
 .chat-input button:hover {
@@ -141,11 +133,6 @@ hr {
     cursor: pointer;
     text-decoration: underline;
     position: relative;
-    transition: color 0.3s ease;
-}
-
-.citation:hover {
-    color: #0056b3;
 }
 
 .citation-tooltip {
@@ -161,7 +148,6 @@ hr {
     z-index: 100;
     font-size: 12px;
     color: #333;
-    transition: opacity 0.3s ease;
 }
 
 .citation:hover .citation-tooltip {
@@ -183,11 +169,6 @@ hr {
     text-decoration: underline;
     display: block;
     margin-top: 5px;
-    transition: color 0.3s ease;
-}
-
-.citation-tooltip .read-more:hover {
-    color: #0056b3;
 }
 
 .popup {
@@ -221,11 +202,6 @@ hr {
     cursor: pointer;
     text-decoration: underline;
     text-align: right;
-    transition: color 0.3s ease;
-}
-
-.popup .close-btn:hover {
-    color: #0056b3;
 }
 
 .reply-button {
@@ -237,9 +213,86 @@ hr {
     border-radius: 10px;
     cursor: pointer;
     font-size: 12px;
-    transition: background-color 0.3s ease;
 }
 
 .reply-button:hover {
     background-color: #0056b3;
+}
+
+/* New CSS for settings panel */
+.settings-icon {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    float: right;
+    margin-right: 15px;
+    margin-top: 5px;
+}
+
+.settings-panel {
+    position: fixed;
+    right: -350px;
+    top: 0;
+    width: 350px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+    transition: right 0.3s ease-in-out;
+    z-index: 1000;
+    padding: 20px;
+    box-sizing: border-box;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.settings-panel.open {
+    right: 0;
+}
+
+.settings-panel .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.settings-panel .close:hover,
+.settings-panel .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.settings-panel h2 {
+    margin-top: 0;
+}
+
+.settings-panel form {
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-panel form label {
+    margin: 10px 0 5px;
+    color: #333;
+}
+
+.settings-panel form input,
+.settings-panel form button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    margin-bottom: 10px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.settings-panel form button {
+    background: rgba(0, 123, 255, 0.6);
+    color: white;
+    cursor: pointer;
+}
+
+.settings-panel form button:hover {
+    background: rgba(0, 123, 255, 0.8);
 }
