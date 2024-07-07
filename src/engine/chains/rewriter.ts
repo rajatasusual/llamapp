@@ -20,8 +20,9 @@ const rewrite = async (question: any, chatLLM: RunnableLike<any, any>) => {
 
     const chain = RunnableSequence.from([
         PromptTemplate.fromTemplate(
-            `You are an expert at web search. 
-Your job is to read a query and rephrase it to be better suited for a web search query.
+            `You are an expert at prompt engineering for LLMs. 
+Your job is to read a query and rephrase it to be better suited for a large language model. Do not include any other text in your response.
+Do not add additional information in your alternate queries.
 Return the answer as JSON in the format {schema}.\n
 For example: {example}.
 

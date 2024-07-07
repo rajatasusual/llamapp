@@ -14,8 +14,9 @@ import { RelevantDocumentsRetriever } from "./engine/chains/retriever";
 import 'dotenv/config';
 import { fusion } from "./engine/chains/fusion";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
+import { Document } from "langchain/document";
 
-const { chatLLM, documentStore, apiStore, embeddings } = configureEnvironment();
+const { chatLLM, documentStore, apiStore, embeddings, client } = configureEnvironment();
 
 const cli = async () => {
 
@@ -50,8 +51,37 @@ const promptQuestion = async () => {
 
 };
 
-const respond = async (question: string) => {
-    question = process.env.REWRITE === "true" ? await rewrite(question, chatLLM) : question;
+const log = async (chainRes: {
+    context: Document[];
+    answer: string;
+} & {
+    [key: string]: unknown;
+}) => {
+    const messageId = chainRes['messageId'];
+    await client.rPush('messages', JSON.stringify({
+        messageId,
+        date: new Date().toISOString(),
+        context: chainRes.context,
+        answer: chainRes.answer,
+        additionalInfo: chainRes
+    }));
+    
+    console.log("messageId: " + messageId);
+}
+
+const respond = async (question: string, replyingToMessageId?: number) => {
+
+    if (replyingToMessageId) {
+        const messages = await client.lRange('messages', 0, -1);
+        const message = messages.find((msg: string) => JSON.parse(msg).messageId === replyingToMessageId);
+        
+        if (message) {
+            const parsedMessage = JSON.parse(message);
+            question = await enrichMessage(parsedMessage, question);
+        }
+    }
+    
+    question = process.env.REWRITE === "true"  && !replyingToMessageId ? await rewrite(question, chatLLM) : question;
 
     const questionAnsweringPrompt = PromptTemplate.fromTemplate(
         `Answer the below question from the following context. This is your only source of truth.: 
@@ -69,13 +99,13 @@ const respond = async (question: string) => {
         embeddings
     });
 
-    if (process.env.FUSION === "true") {
+    if (process.env.FUSION === "true" && !replyingToMessageId) {
         const scoredDocuments = await fusion({ query: question, chatLLM, retriever });
 
         retriever = (await MemoryVectorStore.fromDocuments(scoredDocuments, embeddings)).asRetriever();
-        
-    } 
-    
+
+    }
+
     const retrievalChain = await createRetrievalChain({
         retriever,
         combineDocsChain
@@ -85,13 +115,41 @@ const respond = async (question: string) => {
 
     //log the result
     fs.writeFileSync("output.jsonl", JSON.stringify({
-        data: new Date().toISOString(),
+        date: new Date().toISOString(),
         chainRes
     }), { encoding: 'utf8', flag: 'a' });
 
     return chainRes;
 
 }
+
+const enrichMessage = (message: any, question: string) => {
+    const enrichedQuestionAnsweringPrompt = PromptTemplate.fromTemplate(
+        `You have received a new question to answer. Utilize the context provided as well as the previous message to enrich your response. This is your only source of truth.
+    
+    Context: 
+    {context}
+    
+    Previous Question: 
+    {previousQuestion}
+
+    Previous Message: 
+    {previousMessage}
+    
+    Question: 
+    {input}
+    
+    Provide a detailed and accurate response based on the above context and previous message.`
+    );
+
+    return enrichedQuestionAnsweringPrompt.format({
+        context: message.context.map((doc: any) => doc.pageContent).join('\n\n'),
+        previousMessage: message.answer,
+        previousQuestion: message.additionalInfo.input,
+        input: question.split(':').slice(1).join('')
+    });
+}
+
 
 const loadDocuments = async (vectorStore: RedisVectorStore, path: string) => {
     if (path.endsWith('.html')) {
@@ -109,4 +167,4 @@ const loadDocuments = async (vectorStore: RedisVectorStore, path: string) => {
     }
 }
 
-export { cli, respond };
+export { cli, respond, log };

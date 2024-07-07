@@ -10,6 +10,8 @@ const configureEnvironment = () => {
     });
     client.connect();
 
+    client.del('messages');
+
     const embeddings = new OllamaEmbeddings({
         model: process.env.EMBEDDING_MODEL, // default value
         baseUrl: process.env.BASE_URL, // default value
@@ -17,7 +19,7 @@ const configureEnvironment = () => {
     const chatLLM = new ChatOllama({
         baseUrl: process.env.BASE_URL, // Default value
         model: process.env.CHAT_MODEL, // Default value
-        temperature: 0
+        temperature: process.env.CHAT_TEMPERATURE && parseFloat(process.env.CHAT_TEMPERATURE) || 0, // Default value
     });
 
     const documentStore = new RedisVectorStore(embeddings, {
@@ -49,7 +51,7 @@ const configureEnvironment = () => {
         },
     });
 
-    return { chatLLM, documentStore, apiStore, embeddings };
+    return { chatLLM, documentStore, apiStore, embeddings, client };
 };
 
 export { configureEnvironment };

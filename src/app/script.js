@@ -1,14 +1,20 @@
+const State = {
+    replyingToMessageId: null
+};
+
 document.getElementById('user-input').addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {
         sendMessage();
     }
 });
 
-function sendMessage(replyToMessageId = null) {
+function sendMessage() {
     const inputBox = document.getElementById('user-input');
     const message = inputBox.value.trim();
 
     if (message) {
+
+        // Add user's message
         addMessage('user', message);
         inputBox.value = '';
 
@@ -20,7 +26,7 @@ function sendMessage(replyToMessageId = null) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ question: message, replyToMessageId })
+            body: JSON.stringify({ question: message, messageId: State.replyingToMessageId })
         })
         .then(response => response.json())
         .then(data => {
@@ -49,7 +55,8 @@ function addMessage(sender, message, citations = [], messageId = null) {
         replyButton.className = 'reply-button';
         replyButton.textContent = 'Reply';
         replyButton.onclick = () => {
-            document.getElementById('user-input').value = `Replying to message ${messageId}: `;
+            document.getElementById('user-input').value = `Replying to message [${messageId}]: `;
+            State.replyingToMessageId = messageId;
             document.getElementById('user-input').focus();
         };
         messageContent.appendChild(document.createElement('br'));
