@@ -14,6 +14,7 @@ Read more:
 - RAG-Fusion: a New Take on Retrieval-Augmented Generation [https://arxiv.org/abs/2402.03367]
 - Query Rewriting for Retrieval-Augmented Large Language Models [https://arxiv.org/pdf/2305.14283]
 
+> Dive directly into the llamapp RAG engine at src/engine/README.md
 
 Shoutout to folks at Langchain [https://github.com/langchain-ai] for creating a cool ecosystem to learn and build custom LLM applications. Like this:
 ![llamapp UI](https://raw.githubusercontent.com/rajatasusual/llamapp/main/assets/response.png)
