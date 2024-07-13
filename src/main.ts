@@ -1,28 +1,32 @@
 import { PromptTemplate } from "@langchain/core/prompts";
-import { RedisVectorStore } from "@langchain/redis";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { createRetrievalChain } from "langchain/chains/retrieval";
+import { MemoryVectorStore } from "langchain/vectorstores/memory";
 
 import * as readline from 'readline';
 import * as fs from 'fs';
 
-import { addDocuments, loadHTMLDoc, loadPostmanCollection } from "./engine/loader";
 import { configureEnvironment } from "./engine/config";
 import { rewrite } from "./engine/chains/rewriter";
-import { RelevantDocumentsRetriever } from "./engine/chains/retriever";
 
 import 'dotenv/config';
-import { fusion } from "./engine/chains/fusion";
-import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { Document } from "langchain/document";
+import { fusion } from "./engine/chains/fusion";
+import { downloadAndExtractRepo } from "./engine/loaders/GithubLoader";
 
-const { chatLLM, documentStore, apiStore, embeddings, client } = configureEnvironment();
+import { readDirectorySync } from "./engine/loader";
+
+const { chatLLM, retriever, client } = configureEnvironment();
 
 const cli = async () => {
 
+    //if we want to load docs
     if (process.env.LOAD_DOCS === 'true') {
-        await loadDocuments(documentStore, 'docs/expert_answers.html');
-        await loadDocuments(apiStore, 'docs/qualtrics_postman_collection.json');
+
+        const directory = await downloadAndExtractRepo("rajatasusual", "llamapp", "main");
+
+        await readDirectorySync(directory, retriever);
+
     }
 
     await promptQuestion();
@@ -69,10 +73,11 @@ const log = async (chainRes: {
     console.log("messageId: " + messageId);
 }
 
-const respond = async (question: string, replyingToMessageId?: number, config?: any) => {
-
+const respond = async (question: string, replyingToMessageId?: number, config?: any): Promise<any> => {
+    // Update configuration settings
     updateConfig(config);
 
+    // Check if replying to a specific message
     if (replyingToMessageId) {
         const messages = await client.lRange('messages', 0, -1);
         const message = messages.find((msg: string) => JSON.parse(msg).messageId === replyingToMessageId);
@@ -83,46 +88,51 @@ const respond = async (question: string, replyingToMessageId?: number, config?: 
         }
     }
 
-    question = process.env.REWRITE === "true" && !replyingToMessageId ? await rewrite(question, chatLLM) : question;
+    // Optionally rewrite the question
+    const shouldRewrite = process.env.REWRITE === "true" && !replyingToMessageId;
+    if (shouldRewrite) {
+        question = await rewrite(question, chatLLM);
+    }
 
+    // Create the question answering prompt
     const questionAnsweringPrompt = PromptTemplate.fromTemplate(
         `Answer the below question from the following context. This is your only source of truth.: 
-    {context}
-    Question: {input}`
+        {context}
+        Question: {input}`
     );
 
+    // Create the chain to combine documents
     const combineDocsChain = await createStuffDocumentsChain({
         llm: chatLLM,
         prompt: questionAnsweringPrompt
     });
 
-    let retriever: any = new RelevantDocumentsRetriever({
-        vectorStores: Array.from([documentStore, apiStore]),
-        embeddings
-    });
+    // Initialize the retriever
+    let memoryVRetriever = new MemoryVectorStore(retriever.embeddings).asRetriever();
 
-    if (process.env.FUSION === "true" && !replyingToMessageId) {
-        const scoredDocuments = await fusion({ query: question, chatLLM, retriever });
-
-        retriever = (await MemoryVectorStore.fromDocuments(scoredDocuments, embeddings)).asRetriever();
-
+    // Use fusion if enabled and not replying to a specific message
+    const useFusion = process.env.FUSION === "true" && !replyingToMessageId;
+    if (useFusion) {
+        const docs = await fusion({ query: question, chatLLM, retriever });
+        memoryVRetriever = (await MemoryVectorStore.fromDocuments(docs, retriever.embeddings)).asRetriever();
     }
 
+    // Create the retrieval chain
     const retrievalChain = await createRetrievalChain({
-        retriever,
+        retriever: useFusion ? memoryVRetriever : retriever,
         combineDocsChain
     });
 
+    // Invoke the retrieval chain
     const chainRes = await retrievalChain.invoke({ input: question });
 
-    //log the result
+    // Log the result
     fs.writeFileSync("output.jsonl", JSON.stringify({
         date: new Date().toISOString(),
         chainRes
     }), { encoding: 'utf8', flag: 'a' });
 
     return chainRes;
-
 }
 
 const enrichMessage = (message: any, question: string) => {
@@ -150,23 +160,6 @@ const enrichMessage = (message: any, question: string) => {
         previousQuestion: message.additionalInfo.input,
         input: question.split(':').slice(1).join('')
     });
-}
-
-
-const loadDocuments = async (vectorStore: RedisVectorStore, path: string) => {
-    if (path.endsWith('.html')) {
-        const docs = await loadHTMLDoc(path);
-        console.log("Total Documents: " + docs.length);
-
-        await addDocuments(docs, vectorStore);
-    }
-
-    if (path.endsWith('.json')) {
-        const docs = await loadPostmanCollection(path);
-        console.log("Total Documents: " + docs.length);
-
-        await addDocuments(docs, vectorStore);
-    }
 }
 
 const updateConfig = (config: any) => {

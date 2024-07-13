@@ -1,13 +1,17 @@
+import * as uuid from "uuid";
+import * as path from 'path';
+import * as fs from 'fs';
+
+import ignore from 'ignore';
+
 import { HtmlToTextTransformer } from "@langchain/community/document_transformers/html_to_text";
 import { Document } from "langchain/document";
-import { DirectoryLoader } from "langchain/document_loaders/fs/directory";
 import { JSONLoader } from "langchain/document_loaders/fs/json";
 import { TextLoader } from "langchain/document_loaders/fs/text";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { HTMLLoader } from "./loaders/HTMLLoader";
 import { PostmanLoader } from "./loaders/PostmanLoader";
-
-const CHUNK_SIZE = 1000;
+import { RelevantDocumentsRetriever } from "./retriever";
 
 const loadJSONDoc = async (file: string | Blob) => {
     const jsonLoader = new JSONLoader(file);
@@ -18,16 +22,21 @@ const loadJSONDoc = async (file: string | Blob) => {
 
 const loadHTMLDoc = async (file: string | Blob) => {
     const htmlLoader = new HTMLLoader(file);
-    const htmlDoc = await htmlLoader.load();
+    const subDocs = await htmlLoader.load();
 
     const splitter = RecursiveCharacterTextSplitter.fromLanguage("html");
     const transformer = new HtmlToTextTransformer();
 
     const sequence = splitter.pipe(transformer);
 
-    const transformedDoc = await sequence.invoke(htmlDoc);
+    const transformedDocs = await sequence.invoke(subDocs);
 
-    return transformedDoc;
+    //add id to each document
+    for (let i = 0; i < transformedDocs.length; i++) {
+        transformedDocs[i].metadata = { ...transformedDocs[i].metadata, id: uuid.v4() };
+    }
+
+    return transformedDocs;
 }
 
 const loadPostmanCollection = async (file: string | Blob) => {
@@ -37,37 +46,97 @@ const loadPostmanCollection = async (file: string | Blob) => {
     return jsonDoc;
 }
 
-const loadDirectoryDocs = async (directory: string) => {
-    const directoryLoader = new DirectoryLoader(directory, {
-        ".html": (path) => new TextLoader(path),
-        ".json": (path) => new JSONLoader(path),
-    });
+const readDirectorySync = async (dirPath: string, retriever: RelevantDocumentsRetriever) => {
+    const ig = ignore();
 
-    const docs = await directoryLoader.load();
-
-    return docs;
-}
-
-const addDocuments = async (docs: Document<Record<string, any>>[], vectorStore: { addDocuments: (arg0: Document<Record<string, any>>[]) => any; }) => {
-    const time = Date.now();
-
-    let totalDocumentsAdded = 0;
-    let chunk: Document<Record<string, any>>[] = [];
-
-    for (let i = 0; i < docs.length; i += CHUNK_SIZE) {
-        chunk = docs.slice(i, i + CHUNK_SIZE);
-        chunk = chunk.filter((doc) => doc.pageContent.trim() !== "");
-        await vectorStore.addDocuments(chunk);
-        totalDocumentsAdded += chunk.length;
-
-        console.log("Documents Added: " + totalDocumentsAdded + " in " + (Date.now() - time) + "ms");
+    // Check if .gitignore exists and add its rules to the ignore instance
+    const gitignorePath = path.join(dirPath, '.gitignore');
+    if (fs.existsSync(gitignorePath)) {
+        const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
+        ig.add(gitignoreContent);
     }
 
-    console.log("Embeddings Loaded in " + (Date.now() - time) + "ms");
+    const items = fs.readdirSync(dirPath);
 
-    return totalDocumentsAdded;
+    for (const item of items) {
+        const itemPath = path.join(dirPath, item);
+        const stat = fs.statSync(itemPath);
+
+        if (ig.ignores(path.relative(dirPath, itemPath))) {
+            continue; // Skip ignored files and directories
+        }
+
+        if (stat.isDirectory()) {
+            await readDirectorySync(itemPath, retriever);
+        } else {
+            const ext = path.extname(item);
+            if (['.js', '.html', '.ts', '.env', '.md', '.json'].includes(ext)) {
+                await fetchDocument(itemPath, retriever);
+            }
+        }
+    }
+}
+
+const fetchDocument = async (filePath: string, retriever: RelevantDocumentsRetriever) => {
+
+    console.log(`Loading ${filePath}`);
+
+    const time = Date.now();
+    const textLoader = new TextLoader(filePath);
+    const parentDoc: Document<Record<string, any>> = (await textLoader.load())[0];
+
+    await addDocument(parentDoc, retriever)
+
+    console.log(`Loaded ${filePath.split(path.sep).pop()} in ${Date.now() - time} ms`);
+}
+
+const addDocument = async (doc: Document<Record<string, any>>, retriever: RelevantDocumentsRetriever) => {
+    const docs = await prepareDocument(doc);
+
+    await retriever.addDocument(doc, docs);
 
 }
 
-export { loadJSONDoc, loadHTMLDoc, loadPostmanCollection, loadDirectoryDocs, addDocuments };
+const prepareDocument = async (parentDocument: Document<Record<string, any>>) => {
+
+    const splitter = new RecursiveCharacterTextSplitter({
+        chunkSize: 1000,
+        chunkOverlap: 100,
+    });
+
+    const docs = await splitter.splitDocuments([parentDocument]);
+
+    const docIds = docs.map((_) => uuid.v4());
+
+    const childSplitter = new RecursiveCharacterTextSplitter({
+        chunkSize: 400,
+        chunkOverlap: 0,
+    });
+
+    const subDocs = [];
+    for (let i = 0; i < docs.length; i += 1) {
+        const childDocs = await childSplitter.splitDocuments([docs[i]]);
+        const taggedChildDocs = childDocs.map((childDoc) => {
+            // eslint-disable-next-line no-param-reassign
+            childDoc.metadata["source"] = docIds[i];
+            return childDoc;
+        });
+        subDocs.push(...taggedChildDocs);
+    }
+
+
+    const source = uuid.v4();
+
+    docs.map((doc) => {
+        doc.metadata = { ...doc.metadata, source, id: uuid.v4() };
+    });
+
+    parentDocument.id = source;
+
+    return docs;
+
+}
+
+
+export { loadJSONDoc, loadHTMLDoc, loadPostmanCollection, readDirectorySync, fetchDocument, addDocument };
 

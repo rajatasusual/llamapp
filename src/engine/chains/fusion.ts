@@ -6,7 +6,7 @@ import {
 import { StructuredOutputParser } from "langchain/output_parsers";
 import { z } from "zod";
 import { PromptTemplate } from "@langchain/core/prompts";
-import { RelevantDocumentsRetriever } from "./retriever";
+import { RelevantDocumentsRetriever } from "../retriever";
 
 //supporting functions:
 

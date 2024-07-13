@@ -1,16 +1,23 @@
 import { ChatOllama } from "@langchain/community/chat_models/ollama";
 import { OllamaEmbeddings } from "@langchain/community/embeddings/ollama";
 import { RedisVectorStore } from "@langchain/redis";
-import { VectorAlgorithms, createClient } from "redis";
+import { LocalFileStore } from "langchain/storage/file_system";
 
+import { createClient, RedisClientType, VectorAlgorithms } from "redis";
+import * as fs from 'fs';
+
+import { RelevantDocumentsRetriever } from "./retriever";
 
 const configureEnvironment = () => {
-    const client = createClient({
+    const client: RedisClientType = createClient({
         url: process.env.REDIS_URL ?? "redis://localhost:6379",
     });
     client.connect();
 
     client.del('messages');
+
+    if (fs.existsSync('output.jsonl'))
+        fs.truncateSync('output.jsonl');
 
     const embeddings = new OllamaEmbeddings({
         model: process.env.EMBEDDING_MODEL, // default value
@@ -22,10 +29,10 @@ const configureEnvironment = () => {
         temperature: process.env.CHAT_TEMPERATURE && parseFloat(process.env.CHAT_TEMPERATURE) || 0, // Default value
     });
 
-    const documentStore = new RedisVectorStore(embeddings, {
+    const subDocsStore = new RedisVectorStore(embeddings, {
         redisClient: client,
-        indexName: "docs",
-        keyPrefix: "doc",
+        indexName: "subDocs",
+        keyPrefix: "sub",
         indexOptions: {
             ALGORITHM: VectorAlgorithms.HNSW,
             DISTANCE_METRIC: "COSINE"
@@ -33,25 +40,39 @@ const configureEnvironment = () => {
         createIndexOptions: {
             ON: "HASH",
             NOHL: true,
-            
+
         },
     });
 
-    const apiStore = new RedisVectorStore(embeddings, {
+    const summariesStore = new RedisVectorStore(embeddings, {
         redisClient: client,
-        indexName: "api",
-        keyPrefix: "api",
+        indexName: "summaries",
+        keyPrefix: "sum",
         indexOptions: {
             ALGORITHM: VectorAlgorithms.HNSW,
-            DISTANCE_METRIC: "L2"
+            DISTANCE_METRIC: "COSINE"
         },
         createIndexOptions: {
             ON: "HASH",
-            NOHL: true
+            NOHL: true,
+
         },
     });
 
-    return { chatLLM, documentStore, apiStore, embeddings, client };
+    // The fileStore to use to store the original chunks
+    let fileStore: LocalFileStore = new LocalFileStore({
+        rootPath: "./storage",
+    });
+
+    const retriever = new RelevantDocumentsRetriever({
+        subDocsStore,
+        summariesStore,
+        fileStore,
+        client,
+        embeddings,
+        chatLLM
+    })
+    return { chatLLM, retriever, embeddings, client };
 };
 
 export { configureEnvironment };
