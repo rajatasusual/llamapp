@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showPopup(citation) {
         const popup = document.createElement('div');
         popup.className = 'popup';
-        const segments = citation.pageContent.map(content => `<p>${content}</p>`).join('<hr>');
+        const segments = citation.pageContent.map(content => `<p>${marked.parseInline(content)}</p>`).join('<hr>');
         popup.innerHTML = `
             <h4>Source: ${citation.metadata.source}</h4>
             ${segments}
