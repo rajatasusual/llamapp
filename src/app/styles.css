@@ -3,9 +3,22 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    margin: 0;
-    background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+    background: linear-gradient(-45deg, #CECFCF, #35A1CB, #ACE2F9);
+	background-size: 400% 400%;
+	animation: gradient 15s ease infinite;
+	height: 100vh;
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
 }
 
 footer {
@@ -27,21 +40,26 @@ hr {
 
 .logo {
     width: 40px;
+    transition: width 0.3s ease-in-out;
+}
+
+.logo:hover {
+    width: 50px;
 }
 
 .chat-container {
     width: 80%;
     border-radius: 20px;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, #ACE2F9 0%, #35A1CB72 100%);
     backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+    box-shadow: 0 8px 32px #CECFCF72;
     border: 1px solid rgba(255, 255, 255, 0.18);
     position: relative;
 }
 
 .chat-header {
-    background: rgba(0, 123, 255, 0.4);
+    background: linear-gradient(135deg, #ACE2F9 0%, #1A2A73 100%);
     color: white;
     padding: 15px;
     text-align: center;
@@ -70,7 +88,7 @@ hr {
     border: none;
     border-radius: 0;
     outline: none;
-    background: rgba(255, 255, 255, 0.5);
+    background: #cecfcf72;
     color: #333;
     font-family: 'Roboto', sans-serif;
     font-size: medium;
@@ -79,15 +97,15 @@ hr {
 .chat-input button {
     padding: 15px;
     border: none;
-    background-color: rgba(0, 123, 255, 0.6);
     color: white;
     cursor: pointer;
     backdrop-filter: blur(10px);
     font-family: 'Roboto', sans-serif;
+    transition: color 0.5s ease-in-out, background-color 0.5s ease-in-out;
 }
 
 .chat-input button:hover {
-    background-color: rgba(0, 123, 255, 0.8);
+    background-color: #FFC995;
 }
 
 .message {
@@ -111,7 +129,7 @@ hr {
 }
 
 .message.user .message-content {
-    background: rgba(0, 123, 255, 0.4);
+    background: #35A1CB;
     color: white;
     align-self: flex-end;
 }
@@ -142,7 +160,7 @@ hr {
     left: 0;
     background: rgba(255, 255, 255, 0.9);
     border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 16px #CECFCF72;
     padding: 10px;
     max-width: 300px;
     z-index: 100;
@@ -182,7 +200,7 @@ hr {
     padding: 20px;
     background: rgba(255, 255, 255, 0.9);
     border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 16px #CECFCF72;
     z-index: 200;
 }
 
@@ -198,7 +216,7 @@ hr {
 .popup .close-btn {
     display: block;
     margin-top: 10px;
-    color: #007bff;
+    color: #35A1CB;
     cursor: pointer;
     text-decoration: underline;
     text-align: right;
@@ -207,7 +225,7 @@ hr {
 .reply-button {
     margin-top: 10px;
     padding: 5px 10px;
-    background-color: #007bff;
+    background-color: #35A1CB;
     color: white;
     border: none;
     border-radius: 10px;
@@ -220,7 +238,7 @@ hr {
 }
 
 /* New CSS for settings panel */
-.settings-icon {
+.icon {
     width: 24px;
     height: 24px;
     cursor: pointer;
@@ -237,7 +255,7 @@ hr {
     height: 100%;
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(10px);
-    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+    box-shadow: -2px 0 5px #CECFCF72;
     transition: right 0.3s ease-in-out;
     z-index: 1000;
     padding: 20px;

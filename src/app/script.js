@@ -20,6 +20,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    document.getElementById('send-button').addEventListener('click', (e) => {
+        sendMessage();
+    });
+
+    document.getElementById('settings-button').addEventListener('click', (e) => {
+        openSettings();
+    });
+
     function sendMessage() {
         const inputBox = document.getElementById('user-input');
         const message = inputBox.value.trim();

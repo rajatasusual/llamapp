@@ -12,7 +12,7 @@
     <div class="chat-container" role="main">
         <div class="chat-header">
             <img src="assets/llama.png" alt="Bot" class="logo">
-            <img src="assets/setting.png" alt="Settings" class="settings-icon" onclick="openSettings()">
+            <img src="assets/settings.svg" alt="Settings" class="icon" id="settings-button">
 
         </div>
         <div class="chat-box" id="chat-box" role="log" aria-live="polite">
@@ -20,7 +20,7 @@
         </div>
         <div class="chat-input">
             <input type="text" id="user-input" placeholder="Type a message..." aria-label="Type a message">
-            <button onclick="sendMessage()">Send</button>
+            <button><img src="assets/send.svg" alt="Send" class="icon" id="send-button"></button>
         </div>
     </div>
     <div id="settings-panel" class="settings-panel">
@@ -47,10 +47,9 @@
         </form>
     </div>
     <footer>
-        <a href="https://www.flaticon.com/free-icons/llama" title="llama icons">Llama icon created by Freepik -
-            Flaticon</a>
-        <a href="https://www.flaticon.com/free-icons/settings" title="settings icons">Settings icons created by Freepik
-            - Flaticon</a>
+        <a href="https://www.rajatasusual.github.io" title="Github profile">Created by Rajat</a>
+        |
+        <a href="https://www.github.com/rajatasusual/llamapp" title="Github repository">Source code here</a>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
     <script src="config.js" defer></script>
