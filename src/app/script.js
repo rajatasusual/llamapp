@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const USER = 'user';
-    const BOT = 'bot';
+    const LLAMA = 'llama';
     const TYPING_INDICATOR_ID = 'typing-indicator';
     const CITATION_CLASS = 'citation';
     const CITATION_TOOLTIP_CLASS = 'citation-tooltip';
@@ -50,19 +50,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(data => {
                     if (data.success) {
                         if(data.fileId) {
-                            addMessage('bot', 'File uploaded successfully. File ID: ' + data.fileId);
+                            addMessage('llama', 'File uploaded successfully. File ID: ' + data.fileId);
                         } else {
-                            addMessage('bot', 'File already exists or could not be uploaded.');
+                            addMessage('llama', 'File already exists or could not be uploaded.');
                         }
                     } else {
-                        addMessage('bot', 'File upload failed.');
+                        addMessage('llama', 'File upload failed.');
                     }
                 })
                 .catch(error => {
-                    addMessage('bot', 'Oops! Something went wrong. Please try again later.<br>Error: ' + error.message);
+                    addMessage('llama', 'Oops! Something went wrong. Please try again later.<br>Error: ' + error.message);
                 });
         } else {
-            addMessage('bot', 'No file selected.');
+            addMessage('llama', 'No file selected.');
         }
 
         fileInput.value = '';
@@ -92,12 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(data => {
                     hideTypingIndicator();
                     const formattedMessage = marked.parse(data.answer.answer);
-                    addMessage(BOT, formattedMessage, data.answer.context, data.messageId);
+                    addMessage(LLAMA, formattedMessage, data.answer.context, data.messageId);
                     State.replyingToMessageId = null;
                 })
                 .catch(error => {
                     hideTypingIndicator();
-                    addMessage(BOT, `Oops! Something went wrong. Please try again later.<br>Error: ${error.message}`);
+                    addMessage(LLAMA, `Oops! Something went wrong. Please try again later.<br>Error: ${error.message}`);
                 });
         }
     }
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         messageContent.className = MESSAGE_CONTENT_CLASS;
         messageContent.innerHTML = message;
 
-        if (sender === BOT && messageId) {
+        if (sender === LLAMA && messageId) {
             appendReplyButton(messageContent, messageId);
         }
 
@@ -234,11 +234,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const chatBox = document.getElementById('chat-box');
         const typingIndicator = document.createElement('div');
         typingIndicator.id = TYPING_INDICATOR_ID;
-        typingIndicator.className = `${MESSAGES_CLASS} ${BOT}`;
+        typingIndicator.className = `${MESSAGES_CLASS} ${LLAMA}`;
 
         const typingContent = document.createElement('div');
         typingContent.className = MESSAGE_CONTENT_CLASS;
-        typingContent.innerText = 'Bot is typing...';
+        typingContent.innerText = 'Llama is munching...';
 
         typingIndicator.appendChild(typingContent);
         chatBox.appendChild(typingIndicator);
