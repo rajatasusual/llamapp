@@ -172,7 +172,7 @@ export class RelevantDocumentsRetriever extends BaseRetriever {
 		// Store the hash to avoid future duplicate uploads
 		const hashKeyValuePair: [string, Uint8Array] = [
 			doc.id,
-			Uint8Array.from(encoder.encode(doc.id))
+			Uint8Array.from(encoder.encode(doc.pageContent))
 		];
 		await this.filesStore.mset([hashKeyValuePair]);
 
