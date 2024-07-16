@@ -1,4 +1,5 @@
-import * as uuid from "uuid";
+import * as crypto from 'crypto';
+
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -33,7 +34,10 @@ const loadHTMLDoc = async (file: string | Blob) => {
 
     //add id to each document
     for (let i = 0; i < transformedDocs.length; i++) {
-        transformedDocs[i].metadata = { ...transformedDocs[i].metadata, id: uuid.v4() };
+        transformedDocs[i].metadata = {
+            ...transformedDocs[i].metadata,
+            id: crypto.createHash('sha3-256').update(transformedDocs[i].pageContent).digest('hex')
+        };
     }
 
     return transformedDocs;
@@ -77,23 +81,28 @@ const readDirectorySync = async (dirPath: string, retriever: RelevantDocumentsRe
     }
 }
 
-const fetchDocument = async (filePath: string, retriever: RelevantDocumentsRetriever) => {
+const fetchDocument = async (filePath: string, retriever: RelevantDocumentsRetriever, loader: any = TextLoader) => {
 
     console.log(`Loading ${filePath}`);
 
     const time = Date.now();
-    const textLoader = new TextLoader(filePath);
-    const parentDoc: Document<Record<string, any>> = (await textLoader.load())[0];
+    const fileLoader = new loader(filePath);
+    const parentDoc: Document<Record<string, any>> = (await fileLoader.load())[0];
 
-    await addDocument(parentDoc, retriever)
+    const docId = await addDocument(parentDoc, retriever);
 
-    console.log(`Loaded ${filePath.split(path.sep).pop()} in ${Date.now() - time} ms`);
+    if (docId) {
+        console.log(`Loaded ${filePath.split(path.sep).pop()} in ${Date.now() - time} ms`);
+    }
+    fs.unlinkSync(filePath); // Delete the file after processing
+
+    return docId;
 }
 
 const addDocument = async (doc: Document<Record<string, any>>, retriever: RelevantDocumentsRetriever) => {
     const docs = await prepareDocument(doc);
 
-    await retriever.addDocument(doc, docs);
+    return await retriever.addDocument(doc, docs);
 
 }
 
@@ -106,7 +115,7 @@ const prepareDocument = async (parentDocument: Document<Record<string, any>>) =>
 
     const docs = await splitter.splitDocuments([parentDocument]);
 
-    const docIds = docs.map((_) => uuid.v4());
+    const docIds = docs.map((_) => crypto.createHash('sha3-256').update(_.pageContent).digest('hex'));
 
     const childSplitter = new RecursiveCharacterTextSplitter({
         chunkSize: 400,
@@ -125,10 +134,13 @@ const prepareDocument = async (parentDocument: Document<Record<string, any>>) =>
     }
 
 
-    const source = uuid.v4();
+    const source = crypto.createHash('sha3-256').update(parentDocument.pageContent).digest('hex');
 
     docs.map((doc) => {
-        doc.metadata = { ...doc.metadata, source, id: uuid.v4() };
+        doc.metadata = {
+            ...doc.metadata, source,
+            id: crypto.createHash('sha3-256').update(doc.pageContent).digest('hex')
+        };
     });
 
     parentDocument.id = source;

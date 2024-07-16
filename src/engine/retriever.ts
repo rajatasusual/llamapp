@@ -1,5 +1,5 @@
-import * as uuid from "uuid";
 import * as path from 'path';
+import * as crypto from 'crypto';
 
 import {
 	BaseRetriever,
@@ -66,6 +66,10 @@ export class RelevantDocumentsRetriever extends BaseRetriever {
 
 	}
 
+	calculateSHA3Hash(content: string): string {
+		return crypto.createHash('sha3-256').update(content).digest('hex');
+	}
+
 	createRedisStore(indexName: string, keyPrefix: string) {
 		return new RedisVectorStore(this.embeddings, {
 			redisClient: this.client,
@@ -92,17 +96,22 @@ export class RelevantDocumentsRetriever extends BaseRetriever {
 		const relevantResults: any[] = [];
 
 		const findRelevantDocuments = async (store: RedisVectorStore) => {
-			const retrievedDocuments = await store.similaritySearchVectorWithScore(embeddedQuery, 10);
+			try {
+				const retrievedDocuments = await store.similaritySearchVectorWithScore(embeddedQuery, 10);
 
-			switch (store.indexOptions.DISTANCE_METRIC) {
-				case "L2":
-					return retrievedDocuments.filter(result => result[1] <= Number.parseFloat(L2IndexThreshold));
+				switch (store.indexOptions.DISTANCE_METRIC) {
+					case "L2":
+						return retrievedDocuments.filter(result => result[1] <= Number.parseFloat(L2IndexThreshold));
 
-				case "COSINE":
-					return retrievedDocuments.filter(result => result[1] <= Number.parseFloat(CosineIndexThreshold));
+					case "COSINE":
+						return retrievedDocuments.filter(result => result[1] <= Number.parseFloat(CosineIndexThreshold));
 
-				default:
-					return retrievedDocuments;
+					default:
+						return retrievedDocuments;
+				}
+			} catch (error) {
+				console.error(error);
+				return [];
 			}
 		};
 
@@ -128,14 +137,23 @@ export class RelevantDocumentsRetriever extends BaseRetriever {
 		const encoder = new TextEncoder();
 
 		if (doc.id === undefined)
-			doc.id = uuid.v4();
+			doc.id = this.calculateSHA3Hash(doc.pageContent);
+
+		const fileContent = JSON.stringify({
+			pageContent: doc.pageContent,
+			metadata: doc.metadata
+		});
+		
+		// Check if the hash already exists
+		const existingDoc = await this.filesStore.mget([doc.id]);
+		if (existingDoc && existingDoc.length > 0 && existingDoc[0] !== undefined) {
+			console.log("File already exists, skipping document creation.");
+			return 0;
+		}
 
 		const keyValuePair: [string, Uint8Array] = [
 			doc.id,
-			Uint8Array.from(encoder.encode(JSON.stringify({
-				pageContent: doc.pageContent,
-				metadata: doc.metadata
-			})))
+			Uint8Array.from(encoder.encode(fileContent))
 		];
 
 		const worthSummarizing = ['.js', '.html', '.ts', '.md'].includes(
@@ -150,6 +168,15 @@ export class RelevantDocumentsRetriever extends BaseRetriever {
 		await this.filesStore.mset([keyValuePair]);
 		await this.subDocsStore.addDocuments(subDocs);
 		worthSummarizing.length > 0 && await this.summariesStore.addDocuments(summaries);
+
+		// Store the hash to avoid future duplicate uploads
+		const hashKeyValuePair: [string, Uint8Array] = [
+			doc.id,
+			Uint8Array.from(encoder.encode(doc.id))
+		];
+		await this.filesStore.mset([hashKeyValuePair]);
+
+		return doc.id;
 	}
 
 	async _getRelevantDocuments(
@@ -158,14 +185,6 @@ export class RelevantDocumentsRetriever extends BaseRetriever {
 	): Promise<Document[]> {
 		const relevantDocuments = await this.getRelevantResults(await this.embeddings.embedQuery(query));
 
-		/*
-		const docs = await this.filesStore.mget(relevantDocuments.map((doc) => doc.metadata.id));
-	
-		const decoder = new TextDecoder();
-	
-		const docsJson = docs.filter((doc) => doc !== null && doc !== undefined).map((doc) => JSON.parse(decoder.decode(doc)));
-		const relevantDocs = docsJson.map((doc: { pageContent: any; metadata: any; }) => new Document({ pageContent: doc.pageContent, metadata: doc.metadata }));
-		*/
 		return relevantDocuments;
 	}
 }

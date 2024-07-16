@@ -1,4 +1,4 @@
-import * as uuid from "uuid";
+import * as crypto from 'crypto';
 
 import {
     RunnableSequence,
@@ -27,7 +27,7 @@ const getSummaries = async (docs: Document<Record<string, any>>[], chatLLM: Chat
             pageContent: summary,
             metadata: {
                 source: docs[i].metadata.id,
-                id: uuid.v4()
+                id: crypto.createHash('sha3-256').update(summary).digest('hex')
             },
         });
         return summaryDoc;

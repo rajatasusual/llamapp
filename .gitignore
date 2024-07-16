@@ -3,3 +3,4 @@ docs
 **/output.jsonl
 .DS_Store
 storage
+tmp

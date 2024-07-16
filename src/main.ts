@@ -2,6 +2,7 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { createRetrievalChain } from "langchain/chains/retrieval";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
+import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 
 import * as readline from 'readline';
 import * as fs from 'fs';
@@ -14,7 +15,8 @@ import { Document } from "langchain/document";
 import { fusion } from "./engine/chains/fusion";
 import { downloadAndExtractRepo } from "./engine/loaders/GithubLoader";
 
-import { readDirectorySync } from "./engine/loader";
+import { fetchDocument, loadHTMLDoc, loadJSONDoc, readDirectorySync } from "./engine/loader";
+import { TextLoader } from "langchain/document_loaders/fs/text";
 
 const { chatLLM, retriever, client } = configureEnvironment();
 
@@ -30,6 +32,17 @@ const cli = async () => {
     }
 
     await promptQuestion();
+}
+
+const load = async (file: Express.Multer.File) => {
+    const fileId = await fetchDocument(file.path, retriever,
+        file.mimetype === 'application/json' ? loadJSONDoc : 
+        file.mimetype === 'text/html' ? loadHTMLDoc :
+        file.mimetype === 'application/pdf' ? PDFLoader :
+        TextLoader
+    );
+
+    return fileId;
 }
 
 const promptQuestion = async () => {
@@ -170,4 +183,4 @@ const updateConfig = (config: any) => {
     }
 }
 
-export { cli, respond, log };
+export { cli, respond, log, load };

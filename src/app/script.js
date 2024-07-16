@@ -27,6 +27,46 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('settings-button').addEventListener('click', (e) => {
         openSettings();
     });
+    // Event listener for the file input change
+    document.getElementById('file-input').addEventListener('change', uploadFile);
+
+    document.getElementById('upload-button').addEventListener('click', (e) => {
+        document.getElementById('file-input').click();
+    });
+
+    function uploadFile() {
+        const fileInput = document.getElementById('file-input');
+        const file = fileInput.files[0];
+
+        if (file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('http://localhost:3000/upload', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if(data.fileId) {
+                            addMessage('bot', 'File uploaded successfully. File ID: ' + data.fileId);
+                        } else {
+                            addMessage('bot', 'File already exists or could not be uploaded.');
+                        }
+                    } else {
+                        addMessage('bot', 'File upload failed.');
+                    }
+                })
+                .catch(error => {
+                    addMessage('bot', 'Oops! Something went wrong. Please try again later.<br>Error: ' + error.message);
+                });
+        } else {
+            addMessage('bot', 'No file selected.');
+        }
+
+        fileInput.value = '';
+    }
 
     function sendMessage() {
         const inputBox = document.getElementById('user-input');
