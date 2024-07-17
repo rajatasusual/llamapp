@@ -139,11 +139,6 @@ export class RelevantDocumentsRetriever extends BaseRetriever {
 		if (doc.id === undefined)
 			doc.id = this.calculateSHA3Hash(doc.pageContent);
 
-		const fileContent = JSON.stringify({
-			pageContent: doc.pageContent,
-			metadata: doc.metadata
-		});
-		
 		// Check if the hash already exists
 		const existingDoc = await this.filesStore.mget([doc.id]);
 		if (existingDoc && existingDoc.length > 0 && existingDoc[0] !== undefined) {
@@ -151,30 +146,26 @@ export class RelevantDocumentsRetriever extends BaseRetriever {
 			return 0;
 		}
 
+		const fileContent = JSON.stringify({
+			pageContent: doc.pageContent,
+			metadata: doc.metadata
+		});
 		const keyValuePair: [string, Uint8Array] = [
 			doc.id,
 			Uint8Array.from(encoder.encode(fileContent))
 		];
+		fs.existsSync(this.filesStore.rootPath) || fs.mkdirSync(this.filesStore.rootPath, { recursive: true });
 
-		const worthSummarizing = ['.js', '.html', '.ts', '.md'].includes(
-			path.extname(doc.metadata.source)
-		) ? subDocs.filter((doc) => doc.pageContent.length > 400) : [];
+		const worthSummarizing = ['.js', '.html', '.ts', '.md', '.pdf']
+			.includes(
+				path.extname(doc.metadata.source)
+			) ? subDocs.filter((doc) => doc.pageContent.length > 400) : [];
 
 		const summaries = worthSummarizing.length > 0 ? await getSummaries(worthSummarizing, this.chatLLM) : [];
 
-		fs.existsSync(this.filesStore.rootPath) || fs.mkdirSync(this.filesStore.rootPath, { recursive: true });
-
-		// Use the retriever to add the original chunks to the document store
 		await this.filesStore.mset([keyValuePair]);
 		await this.subDocsStore.addDocuments(subDocs);
 		worthSummarizing.length > 0 && await this.summariesStore.addDocuments(summaries);
-
-		// Store the hash to avoid future duplicate uploads
-		const hashKeyValuePair: [string, Uint8Array] = [
-			doc.id,
-			Uint8Array.from(encoder.encode(doc.pageContent))
-		];
-		await this.filesStore.mset([hashKeyValuePair]);
 
 		return doc.id;
 	}

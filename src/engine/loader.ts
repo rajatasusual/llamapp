@@ -115,25 +115,6 @@ const prepareDocument = async (parentDocument: Document<Record<string, any>>) =>
 
     const docs = await splitter.splitDocuments([parentDocument]);
 
-    const docIds = docs.map((_) => crypto.createHash('sha3-256').update(_.pageContent).digest('hex'));
-
-    const childSplitter = new RecursiveCharacterTextSplitter({
-        chunkSize: 400,
-        chunkOverlap: 0,
-    });
-
-    const subDocs = [];
-    for (let i = 0; i < docs.length; i += 1) {
-        const childDocs = await childSplitter.splitDocuments([docs[i]]);
-        const taggedChildDocs = childDocs.map((childDoc) => {
-            // eslint-disable-next-line no-param-reassign
-            childDoc.metadata["source"] = docIds[i];
-            return childDoc;
-        });
-        subDocs.push(...taggedChildDocs);
-    }
-
-
     const source = crypto.createHash('sha3-256').update(parentDocument.pageContent).digest('hex');
 
     docs.map((doc) => {
