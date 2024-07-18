@@ -20,6 +20,9 @@ import { TextLoader } from "langchain/document_loaders/fs/text";
 
 const { chatLLM, retriever, client } = configureEnvironment();
 
+/**
+ * Asynchronous function for handling CLI operations. 
+ */
 const cli = async () => {
 
     //if we want to load docs
@@ -34,6 +37,12 @@ const cli = async () => {
     await promptQuestion();
 }
 
+/**
+ * Loads a file asynchronously and fetches the document to add it to the retriever based on the file type.
+ *
+ * @param {Express.Multer.File} file - The file to be loaded
+ * @return {Promise<string>} The ID of the added document
+ */
 const load = async (file: Express.Multer.File) => {
     const fileId = await fetchDocument(file.path, retriever,
         file.mimetype === 'application/json' ? loadJSONDoc : 
@@ -45,6 +54,11 @@ const load = async (file: Express.Multer.File) => {
     return fileId;
 }
 
+/**
+ * Asynchronously prompts the user for input and responds with a message from the RAG model.
+ *
+ * @return {Promise<void>} A promise that resolves when the user has inputted their question and the RAG model has responded.
+ */
 const promptQuestion = async () => {
 
     //ask for user input
@@ -68,6 +82,12 @@ const promptQuestion = async () => {
 
 };
 
+/**
+ * Logs the chain result with message ID, date, context, answer, and additional information.
+ *
+ * @param {{ context: Document[]; answer: string; } & { [key: string]: unknown; }} chainRes - The chain result object containing context, answer, and additional information
+ * @return {Promise<void>} Promise that resolves after storing the message
+ */
 const log = async (chainRes: {
     context: Document[];
     answer: string;
@@ -86,6 +106,14 @@ const log = async (chainRes: {
     console.log("messageId: " + messageId);
 }
 
+/**
+ * A function that handles responding to a question by updating configuration settings, enriching the question, rewriting the question if needed, creating a question answering prompt, creating a chain to combine documents, initializing the retriever, using fusion if enabled, creating a retrieval chain, invoking the retrieval chain, logging the result, and returning the chain result.
+ *
+ * @param {string} question - The question to respond to
+ * @param {number} [replyingToMessageId] - The ID of the message being replied to
+ * @param {any} [config] - Configuration settings
+ * @return {Promise<any>} A promise that resolves with the chain result
+ */
 const respond = async (question: string, replyingToMessageId?: number, config?: any): Promise<any> => {
     // Update configuration settings
     updateConfig(config);
@@ -148,6 +176,13 @@ const respond = async (question: string, replyingToMessageId?: number, config?: 
     return chainRes;
 }
 
+/**
+ * Enriches the user query based on previous context and messages.
+ *
+ * @param {any} message - The previous message containing context and additional information
+ * @param {string} question - The new question to enrich
+ * @return {string} The enriched question with context and previous message details
+ */
 const enrichMessage = (message: any, question: string) => {
     const enrichedQuestionAnsweringPrompt = PromptTemplate.fromTemplate(
         `You have received a new question to answer. Utilize the context provided as well as the previous message to enrich your response. This is your only source of truth.
@@ -175,6 +210,11 @@ const enrichMessage = (message: any, question: string) => {
     });
 }
 
+/**
+ * Updates the configuration values in the environment variables.
+ *
+ * @param {any} config - The configuration object to update the environment variables
+ */
 const updateConfig = (config: any) => {
     if (config) {
         Object.keys(config).forEach(key => {

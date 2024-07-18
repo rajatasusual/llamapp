@@ -13,6 +13,14 @@ import { configureEnvironment } from "../config";
 
 const { embeddings, client, chatLLM } = configureEnvironment();
 
+/**
+ * Generates hypothetical questions based on the provided documents.
+ *
+ * @param {Document<Record<string, any>>[]} docs - Array of documents to generate hypothetical questions from
+ * @param {string} idKey - Key for identifying documents
+ * @param {string[]} docIds - Array of document IDs
+ * @return {Document[]} Array of documents containing hypothetical questions
+ */
 const getHypotheticalQuestionDocs = async (docs: Document<Record<string, any>>[], idKey: string, docIds: string[]) => {
     const functionsSchema = [
         {

@@ -7,7 +7,15 @@ import * as path from 'path';
 // Promisify necessary fs functions
 const createReadStream = fs.createReadStream;
 
-// Function to download and extract the repository
+
+/**
+ * Function to download and extract a repository from GitHub.
+ *
+ * @param {string} owner - The owner of the repository
+ * @param {string} repo - The name of the repository
+ * @param {string} branch - The branch of the repository
+ * @return {Promise<string>} The path where the repository is extracted
+ */
 async function downloadAndExtractRepo(owner = 'rajatasusual', repo = 'llamapp', branch = 'main'): Promise<string> {
 
     // Define the URL for the repository ZIP file

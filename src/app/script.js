@@ -1,8 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Initial state object to keep track of the current state of the app
     const State = {
         replyingToMessageId: null
     };
 
+    // Constants for different classes and IDs used in the app
     const USER = 'user';
     const LLAMA = 'llama';
     const TYPING_INDICATOR_ID = 'typing-indicator';
@@ -14,26 +16,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const MESSAGES_CLASS = 'message';
     const CITATIONS_CLASS = 'citations';
 
+    // Event listener for user input field to detect 'Enter' key press
     document.getElementById('user-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             sendMessage();
         }
     });
 
+    // Event listener for the send button
     document.getElementById('send-button').addEventListener('click', (e) => {
         sendMessage();
     });
 
+    // Event listener for the settings button
     document.getElementById('settings-button').addEventListener('click', (e) => {
         openSettings();
     });
-    // Event listener for the file input change
+
+    // Event listener for the file input change event to handle file uploads
     document.getElementById('file-input').addEventListener('change', uploadFile);
 
+    // Event listener for the upload button
     document.getElementById('upload-button').addEventListener('click', (e) => {
         document.getElementById('file-input').click();
     });
 
+
+    /**
+     * Function to handle file uploads. It retrieves the selected file, creates form data, 
+     * and sends the file to the server via a POST request. 
+     *
+     * @param None
+     * @return None
+     */
     function uploadFile() {
         const fileInput = document.getElementById('file-input');
         const file = fileInput.files[0];
@@ -42,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData();
             formData.append('file', file);
 
+            // Send the file to the server
             fetch('http://localhost:3000/upload', {
                 method: 'POST',
                 body: formData
@@ -49,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        if(data.fileId) {
+                        if (data.fileId) {
                             addMessage('llama', 'File uploaded successfully. File ID: ' + data.fileId);
                         } else {
                             addMessage('llama', 'File already exists or could not be uploaded.');
@@ -65,9 +81,17 @@ document.addEventListener('DOMContentLoaded', () => {
             addMessage('llama', 'No file selected.');
         }
 
+        // Reset the file input value
         fileInput.value = '';
     }
 
+
+    /**
+     * Function to handle sending messages
+     *
+     * @param {void}
+     * @return {void}
+     */
     function sendMessage() {
         const inputBox = document.getElementById('user-input');
         const message = inputBox.value.trim();
@@ -77,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             inputBox.value = '';
             showTypingIndicator();
 
+            // Send the message to the server and get a response
             fetch('http://localhost:3000/respond', {
                 method: 'POST',
                 headers: {
@@ -102,6 +127,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /**
+     * Function to get the current configuration.
+     *
+     * @return {Object} the current configuration object
+     */
     function getConfig() {
         return {
             REWRITE: getConfigValue('REWRITE'),
@@ -113,6 +143,15 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    /**
+     * Adds a new message to the chat box.
+     *
+     * @param {string} sender - The sender of the message.
+     * @param {string} message - The content of the message.
+     * @param {Array} [citations=[]] - Optional array of citations.
+     * @param {string|null} [messageId=null] - Optional message ID.
+     * @return {void} This function does not return anything.
+     */
     function addMessage(sender, message, citations = [], messageId = null) {
         const chatBox = document.getElementById('chat-box');
         const messageElement = document.createElement('div');
@@ -122,10 +161,12 @@ document.addEventListener('DOMContentLoaded', () => {
         messageContent.className = MESSAGE_CONTENT_CLASS;
         messageContent.innerHTML = message;
 
+        // Append reply button if the sender is LLAMA and messageId is present
         if (sender === LLAMA && messageId) {
             appendReplyButton(messageContent, messageId);
         }
 
+        // Append citations if present
         if (citations.length > 0) {
             appendCitations(messageContent, citations);
         }
@@ -135,6 +176,13 @@ document.addEventListener('DOMContentLoaded', () => {
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
+    /**
+     * Appends a reply button to a message content.
+     *
+     * @param {HTMLElement} messageContent - The HTML element where the reply button will be appended.
+     * @param {number} messageId - The ID of the message.
+     * @return {void} This function does not return a value.
+     */
     function appendReplyButton(messageContent, messageId) {
         const replyButton = document.createElement('button');
         replyButton.className = REPLY_BUTTON_CLASS;
@@ -148,6 +196,13 @@ document.addEventListener('DOMContentLoaded', () => {
         messageContent.appendChild(replyButton);
     }
 
+    /**
+     * Appends citations to a message content.
+     *
+     * @param {HTMLElement} messageContent - The element to append the citations to.
+     * @param {Array} citations - An array of citation objects.
+     * @return {void} This function does not return a value.
+     */
     function appendCitations(messageContent, citations) {
         const citationsMap = new Map();
 
@@ -185,22 +240,27 @@ document.addEventListener('DOMContentLoaded', () => {
             citationLink.appendChild(tooltip);
             citationsElement.appendChild(citationLink);
 
+            // Show tooltip on mouse over
             citationLink.addEventListener('mouseover', () => {
                 tooltip.style.display = 'block';
             });
 
+            // Hide tooltip on mouse out
             citationLink.addEventListener('mouseout', () => {
                 tooltip.style.display = 'none';
             });
 
+            // Keep tooltip visible when mouse is over the tooltip itself
             tooltip.addEventListener('mouseover', () => {
                 tooltip.style.display = 'block';
             });
 
+            // Hide tooltip when mouse leaves the tooltip itself
             tooltip.addEventListener('mouseout', () => {
                 tooltip.style.display = 'none';
             });
 
+            // Show popup with full citation on 'Read more' click
             tooltip.querySelector('.read-more').addEventListener('click', () => {
                 showPopup({ metadata: { source }, pageContent: contents });
             });
@@ -211,6 +271,13 @@ document.addEventListener('DOMContentLoaded', () => {
         messageContent.appendChild(citationsElement);
     }
 
+
+    /**
+     * Show a popup with the citation details.
+     *
+     * @param {Object} citation - The citation object containing page content and metadata
+     * @return {void} This function does not return anything
+     */
     function showPopup(citation) {
         const popup = document.createElement('div');
         popup.className = 'popup';
@@ -223,6 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.body.appendChild(popup);
 
+        // Close the popup on clicking the close button
         popup.querySelector(`.${CLOSE_BTN_CLASS}`).addEventListener('click', () => {
             popup.remove();
         });
@@ -230,6 +298,11 @@ document.addEventListener('DOMContentLoaded', () => {
         popup.style.display = 'block';
     }
 
+    /**
+     * Shows a typing indicator in the chat box.
+     *
+     * @return {void} This function does not return anything.
+     */
     function showTypingIndicator() {
         const chatBox = document.getElementById('chat-box');
         const typingIndicator = document.createElement('div');
@@ -245,6 +318,11 @@ document.addEventListener('DOMContentLoaded', () => {
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
+    /**
+     * Hides the typing indicator from the chat box if it exists.
+     *
+     * @return {void} This function does not return anything.
+     */
     function hideTypingIndicator() {
         const typingIndicator = document.getElementById(TYPING_INDICATOR_ID);
         if (typingIndicator) {

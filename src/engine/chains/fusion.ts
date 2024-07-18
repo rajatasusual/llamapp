@@ -10,7 +10,12 @@ import { RelevantDocumentsRetriever } from "../retriever";
 
 //supporting functions:
 
-//generate alternate queries based on the user's original query:
+/**
+ * Generate alternate queries based on the user's original query.
+ *
+ * @param {Object} options - An object containing the query and model.
+ * @return {Promise<string[]>} The array of alternate questions generated.
+ */
 async function generateQueries(options: { query: string; model: RunnableLike<any, any>; }) {
 
     const { query, model } = options;
@@ -60,6 +65,13 @@ Now, Here is the question you need to generate alternate queries for :
     }
 }
 
+/**
+ * Orchestrates the fusion process by generating alternate queries, retrieving relevant documents, 
+ * and applying the reciprocal rank fusion algorithm.
+ *
+ * @param {Object} options - Object containing query, chatLLM, and retriever
+ * @return {Document[]} Filtered list of documents based on the fusion threshold
+ */
 const fusion = async (options: { query: string; chatLLM: any; retriever: RelevantDocumentsRetriever }) => {
 
     const { query, chatLLM, retriever } = options;
@@ -84,7 +96,12 @@ const fusion = async (options: { query: string; chatLLM: any; retriever: Relevan
     return rankedResults.filter((doc: any) => doc.metadata.score > Number.parseFloat(FUSION_THRESHOLD));
 }
 
-//apply the RRF algorithm to the docs, merge any similarities, and return the top results in a single object (fusedScores)
+/**
+ * Applies the reciprocal rank fusion algorithm to merge similarities in the provided results and return the reranked results.
+ *
+ * @param {Document[][]} results - Array of arrays of Document objects representing the search results
+ * @return {Document[]} Reranked list of documents based on the fusion algorithm
+ */
 const reciprocalRankFusion = (results: Document[][]) => {
 
     const fusedScores: Record<string, number> = {};

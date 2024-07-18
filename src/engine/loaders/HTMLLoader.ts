@@ -23,6 +23,12 @@ export class HTMLLoader extends TextLoader {
         return textNodes;
     }
 
+    /**
+     * Extracts text content from HTML string.
+     *
+     * @param {string} html - The HTML string to extract text from.
+     * @return {string[]} An array of extracted text content.
+     */
     private extractTextFromHtml(html: string) {
         let textBuffer: any[] = [];
         let currentText = '';

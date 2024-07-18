@@ -11,6 +11,13 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 import 'dotenv/config';
 import { ChatOllama } from "@langchain/community/chat_models/ollama";
 
+/**
+ * Retrieves summaries for the given documents using the provided ChatOllama instance.
+ *
+ * @param {Document<Record<string, any>>[]} docs - Array of documents to summarize
+ * @param {ChatOllama} chatLLM - ChatOllama instance for summarization
+ * @return {Document[]} Array of summarized documents
+ */
 const getSummaries = async (docs: Document<Record<string, any>>[], chatLLM: ChatOllama) => {
     const summaryChain = RunnableSequence.from([
         { content: (doc: Document) => doc.pageContent },

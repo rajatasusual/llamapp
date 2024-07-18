@@ -8,6 +8,11 @@ import * as fs from 'fs';
 
 import { RelevantDocumentsRetriever } from "./retriever";
 
+/**
+ * Configures the environment by setting up the Redis client, embeddings, chat model, and Redis vector stores.
+ *
+ * @return {Object} An object containing the configured chat model, retriever, embeddings, and Redis client.
+ */
 const configureEnvironment = () => {
     const client: RedisClientType = createClient({
         url: process.env.REDIS_URL ?? "redis://localhost:6379",

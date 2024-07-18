@@ -45,6 +45,12 @@ export class PostmanLoader extends TextLoader {
         return docs;
     }
 
+    /**
+     * Recursive function to traverse the collection
+     *
+     * @param {any[]} itemsArray - array of items to traverse
+     * @return {void} 
+     */
     private extractAPIsFromCollection(collection: { item: any; }) {
         const items: any[] = [];
 

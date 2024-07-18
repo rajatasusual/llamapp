@@ -42,6 +42,12 @@ export class RelevantDocumentsRetriever extends BaseRetriever {
 	embeddings: OllamaEmbeddings;
 	chatLLM: ChatOllama;
 
+	/**
+	 * Constructs a new instance of the RelevantDocumentsRetriever class.
+	 *
+	 * @param {RelevantDocumentsRetrieverInput} fields - The input fields for the constructor.
+	 * @return {void}
+	 */
 	constructor(fields: RelevantDocumentsRetrieverInput) {
 		super(fields);
 
@@ -66,10 +72,23 @@ export class RelevantDocumentsRetriever extends BaseRetriever {
 
 	}
 
+	/**
+	 * Calculates the SHA3-256 hash of the given content.
+	 *
+	 * @param {string} content - The content to calculate the hash for.
+	 * @return {string} The SHA3-256 hash of the content.
+	 */
 	calculateSHA3Hash(content: string): string {
 		return crypto.createHash('sha3-256').update(content).digest('hex');
 	}
 
+	/**
+	 * Creates a RedisVectorStore with the given indexName and keyPrefix.
+	 *
+	 * @param {string} indexName - The name of the index.
+	 * @param {string} keyPrefix - The prefix for the keys.
+	 * @return {RedisVectorStore} The created RedisVectorStore.
+	 */
 	createRedisStore(indexName: string, keyPrefix: string) {
 		return new RedisVectorStore(this.embeddings, {
 			redisClient: this.client,
@@ -87,6 +106,12 @@ export class RelevantDocumentsRetriever extends BaseRetriever {
 		});
 	}
 
+	/**
+	 * Retrieves relevant results based on the embedded query.
+	 *
+	 * @param {number[]} embeddedQuery - The embedded query for similarity search.
+	 * @return {any[]} Relevant documents extracted from the search results.
+	 */
 	async getRelevantResults(embeddedQuery: number[]) {
 
 		// Define relevance thresholds
@@ -95,6 +120,12 @@ export class RelevantDocumentsRetriever extends BaseRetriever {
 
 		const relevantResults: any[] = [];
 
+		/**
+		 * Retrieves relevant results based on the embedded query.
+		 *
+		 * @param {RedisVectorStore} store - The store to retrieve documents from.
+		 * @return {Promise<any[]>} An array of relevant documents extracted from the search results.
+		 */
 		const findRelevantDocuments = async (store: RedisVectorStore) => {
 			try {
 				const retrievedDocuments = await store.similaritySearchVectorWithScore(embeddedQuery, 10);
@@ -133,6 +164,13 @@ export class RelevantDocumentsRetriever extends BaseRetriever {
 
 	}
 
+	/**
+	 * Add a new document to the storage.
+	 *
+	 * @param {Document<Record<string, any>>} doc - The main document to be added.
+	 * @param {Document<Record<string, any>>[]} subDocs - Additional sub-documents to be added.
+	 * @return {Promise<string>} The ID of the added document.
+	 */
 	async addDocument(doc: Document<Record<string, any>>, subDocs: Document<Record<string, any>>[]) {
 		const encoder = new TextEncoder();
 
@@ -170,6 +208,13 @@ export class RelevantDocumentsRetriever extends BaseRetriever {
 		return doc.id;
 	}
 
+	/**
+	 * Retrieves relevant documents based on the query.
+	 *
+	 * @param {string} query - The query string to retrieve relevant documents.
+	 * @param {CallbackManagerForRetrieverRun} [runManager] - Optional callback manager for retriever run.
+	 * @return {Promise<Document[]>} The relevant documents retrieved.
+	 */
 	async _getRelevantDocuments(
 		query: string,
 		runManager?: CallbackManagerForRetrieverRun

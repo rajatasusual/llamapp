@@ -6,6 +6,13 @@ import {
 import { z } from "zod";
 import { PromptTemplate } from "@langchain/core/prompts";
 
+/**
+ * Rewrites a user's query to be better suited for a large language model.
+ *
+ * @param {any} question - The user's query to be rewritten.
+ * @param {RunnableLike<any, any>} chatLLM - A runnable for the large language model.
+ * @return {Promise<any>} The rephrased question as JSON.
+ */
 const rewrite = async (question: any, chatLLM: RunnableLike<any, any>) => {
 
     const schema = JSON.stringify({ "question": "Rephrased Question" });
