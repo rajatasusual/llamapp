@@ -1,5 +1,5 @@
 # Llamapp. 
-![llamapp logo](https://raw.githubusercontent.com/rajatasusual/llamapp/main/src/app/assets/llama.png)
+![llamapp logo](https://raw.githubusercontent.com/rajatasusual/llamapp/main/assets/llama.png)
 ## Run RAG locally. Completely.
 
 ## Overview
@@ -150,7 +150,7 @@ You can run the project in two different modes: CLI and UI.
 
 #### UI Mode
 
-> this project will soon be moved to a standalone setup. Read more about the application in src/app/README.md
+> this project is moved to a standalone setup. Read more about the application in llamapp-web[www.github.com/rajatasusual/llamapp-web]
 
 1. **Start Redis:**
 
