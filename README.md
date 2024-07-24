@@ -17,7 +17,7 @@ Read more:
 > Dive directly into the llamapp RAG engine at src/engine/README.md
 
 Shoutout to folks at Langchain [https://github.com/langchain-ai] for creating a cool ecosystem to learn and build custom LLM applications. Like this:
-![llamapp UI](https://raw.githubusercontent.com/rajatasusual/llamapp/main/assets/response.png)
+![llamapp UI](https://raw.githubusercontent.com/rajatasusual/llamapp-web/main/assets/response.png)
 
 
 ## Objectives
