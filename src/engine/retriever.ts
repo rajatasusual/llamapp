@@ -7,15 +7,14 @@ import {
 } from "@langchain/core/retrievers";
 import type { CallbackManagerForRetrieverRun } from "@langchain/core/callbacks/manager";
 import { Document } from "@langchain/core/documents";
+import { ChatOllama, OllamaEmbeddings } from '@langchain/ollama';
 import { RedisVectorStore } from "@langchain/redis";
-import { OllamaEmbeddings } from "@langchain/community/embeddings/ollama";
 import { LocalFileStore } from "langchain/storage/file_system";
 
 import { createClient, RedisClientType, VectorAlgorithms } from "redis";
 
 import * as fs from 'fs';
 import { getSummaries } from "./chains/summary";
-import { ChatOllama } from "@langchain/community/chat_models/ollama";
 
 export interface RelevantDocumentsRetrieverInput extends BaseRetrieverInput {
 	client: RedisClientType;

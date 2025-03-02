@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@langchain/community": "^0.2.14",
+    "@langchain/ollama": "^0.2.0",
     "@langchain/redis": "^0.0.5",
     "@types/express": "^4.17.21",
     "@types/tmp": "^0.2.6",

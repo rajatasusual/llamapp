@@ -1,8 +1,6 @@
-import { ChatOllama } from "@langchain/community/chat_models/ollama";
-import { OllamaEmbeddings } from "@langchain/community/embeddings/ollama";
 import { RedisVectorStore } from "@langchain/redis";
 import { LocalFileStore } from "langchain/storage/file_system";
-
+import { ChatOllama, OllamaEmbeddings } from "@langchain/ollama";
 import { createClient, RedisClientType, VectorAlgorithms } from "redis";
 import * as fs from 'fs';
 
@@ -15,7 +13,10 @@ import { RelevantDocumentsRetriever } from "./retriever";
  */
 const configureEnvironment = () => {
     const client: RedisClientType = createClient({
-        url: process.env.REDIS_URL ?? "redis://localhost:6379",
+        socket: {
+            connectTimeout: 10000,
+            port: 6360,
+        }
     });
     client.connect();
 
@@ -27,6 +28,7 @@ const configureEnvironment = () => {
     const embeddings = new OllamaEmbeddings({
         model: process.env.EMBEDDING_MODEL, // default value
         baseUrl: process.env.BASE_URL, // default value
+
     });
     const chatLLM = new ChatOllama({
         baseUrl: process.env.BASE_URL, // Default value

@@ -7,9 +7,9 @@ import {
 import { Document } from "@langchain/core/documents";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
+import { ChatOllama } from '@langchain/ollama';
 
 import 'dotenv/config';
-import { ChatOllama } from "@langchain/community/chat_models/ollama";
 
 /**
  * Retrieves summaries for the given documents using the provided ChatOllama instance.

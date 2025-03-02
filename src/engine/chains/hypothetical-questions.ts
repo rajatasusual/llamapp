@@ -43,7 +43,7 @@ const getHypotheticalQuestionDocs = async (docs: Document<Record<string, any>>[]
 
     const functionCallingModel = new OllamaFunctions({
         temperature: 0,
-        model: "gemma:2b"
+        model: process.env.CHAT_MODEL,
     }).bind({
         functions: functionsSchema,
         function_call: { name: "hypothetical_questions" },
