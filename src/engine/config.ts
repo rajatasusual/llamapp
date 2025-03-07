@@ -15,7 +15,8 @@ const configureEnvironment = () => {
     const client: RedisClientType = createClient({
         socket: {
             connectTimeout: 10000,
-            port: 6360,
+            host: process.env.REDIS_HOST || "localhost",
+            port: process.env.REDIS_PORT && parseInt(process.env.REDIS_PORT) || 6379,
         }
     });
     client.connect();

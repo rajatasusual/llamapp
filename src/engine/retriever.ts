@@ -56,7 +56,8 @@ export class RelevantDocumentsRetriever extends BaseRetriever {
 		});
 
 		this.client = fields?.client ?? createClient({
-			url: process.env.REDIS_URL ?? "redis://localhost:6379",
+			url: process.env.REDIS_HOST && process.env.REDIS_PORT ?
+				"redis://" + process.env.REDIS_HOST + ":" + process.env.REDIS_PORT : "redis://localhost:6379",
 		});
 
 		this.subDocsStore = fields?.subDocsStore ?? this.createRedisStore("subDocs", "sub");

@@ -103,7 +103,8 @@ The project consists of the following key components:
      CHAT_TEMPERATURE=0
 
      #DATASTORE
-     REDIS_URL="redis://localhost:6379"
+     REDIS_HOST="redis://localhost:"
+     REDIS_PORT="6379"
 
      #SEARCH SENSITIVITY
      L2_INDEX_THRESHOLD=250
